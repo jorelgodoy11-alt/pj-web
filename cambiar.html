@@ -45,12 +45,6 @@ button{
 </style>
 </head>
 
-<script>
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
-</script>
-
 <body>
 
 <div class="login-box">
@@ -60,20 +54,58 @@ if("serviceWorker" in navigator){
     <button onclick="guardar()">Guardar</button>
 </div>
 
-<script>
-function guardar(){
-    let nueva = document.getElementById("nueva").value;
-    let user = localStorage.getItem("usuarioActual");
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-    if(nueva === ""){
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
+  authDomain: "patrullas-app.firebaseapp.com",
+  databaseURL: "https://patrullas-app-default-rtdb.firebaseio.com/",
+  projectId: "patrullas-app",
+  storageBucket: "patrullas-app.firebasestorage.app",
+  messagingSenderId: "321531166140",
+  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// Obtener UID desde la URL
+const params = new URLSearchParams(window.location.search);
+const uid = params.get('uid');
+
+function guardar(){
+    const nueva = document.getElementById("nueva").value.trim();
+
+    if(!nueva){
         alert("Escribe una contraseña");
         return;
     }
 
-    localStorage.setItem(user, nueva);
-    localStorage.setItem("login", "true");
+    // Re-autenticar el usuario con la contraseña temporal
+    const email = uid + "@pj.com"; // email ficticio
+    const tempPass = prompt("Ingresa la contraseña temporal para confirmar"); 
 
-    window.location.href = "PJ.html";
+    const credential = firebase.auth.EmailAuthProvider.credential(email, tempPass);
+
+    auth.signInWithEmailAndPassword(email, tempPass)
+    .then(() => {
+        // Cambiar contraseña
+        auth.currentUser.updatePassword(nueva)
+        .then(() => {
+            // Actualizar primeraVez en DB
+            db.ref("usuarios/" + uid).update({primeraVez: false})
+            .then(() => {
+                alert("Contraseña cambiada correctamente");
+                window.location.href = "PJ.html";
+            });
+        })
+        .catch(err => alert("Error al cambiar la contraseña: " + err.message));
+    })
+    .catch(err => alert("Error de autenticación: " + err.message));
 }
 </script>
 
