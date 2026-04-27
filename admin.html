@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel Admin</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+    font-family: Arial;
+    background:#111;
+    color:white;
+    padding:20px;
+}
+
+h1,h2{
+    text-align:center;
+}
+
+input{
+    padding:8px;
+    margin:5px;
+    border:none;
+    border-radius:5px;
+}
+
+button{
+    padding:8px 12px;
+    background:#4caf50;
+    border:none;
+    color:white;
+    cursor:pointer;
+    margin:5px;
+    border-radius:5px;
+}
+
+.card{
+    background:#222;
+    margin:15px 0;
+    padding:15px;
+    border-radius:10px;
+}
+</style>
+</head>
+
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+<body>
+
+<h1>Panel Admin PJ</h1>
+
+<!-- 🔐 AGREGAR USUARIO -->
+<h2>Agregar Matrícula</h2>
+
+<input type="text" id="matricula" placeholder="Matrícula">
+<input type="text" id="password" placeholder="Contraseña inicial">
+
+<button onclick="agregar()">Agregar</button>
+
+<!-- ❌ ELIMINAR USUARIO -->
+<h2>Eliminar Matrícula</h2>
+
+<input type="text" id="eliminar" placeholder="Matrícula a eliminar">
+<button onclick="eliminarUsuario()">Eliminar</button>
+
+<hr>
+
+<!-- 📊 REPORTES -->
+<h2>Reportes Recibidos</h2>
+
+<div id="contenedor"></div>
+
+<!-- 🔥 FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
+  authDomain: "patrullas-app.firebaseapp.com",
+  databaseURL: "https://patrullas-app-default-rtdb.firebaseio.com/",
+  projectId: "patrullas-app",
+  storageBucket: "patrullas-app.firebasestorage.app",
+  messagingSenderId: "321531166140",
+  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
+
+<!-- 🔐 USUARIOS (TU CÓDIGO) -->
+<script>
+function agregar(){
+    let mat = document.getElementById("matricula").value;
+    let pass = document.getElementById("password").value;
+
+    if(mat === "" || pass === ""){
+        alert("Llena todos los campos");
+        return;
+    }
+
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
+
+    usuarios[mat] = pass;
+
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    alert("Matrícula agregada");
+}
+
+function eliminarUsuario(){
+    let mat = document.getElementById("eliminar").value;
+
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
+
+    if(usuarios[mat]){
+        delete usuarios[mat];
+
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+        localStorage.removeItem(mat);
+
+        alert("Usuario eliminado");
+    } else {
+        alert("No existe esa matrícula");
+    }
+}
+</script>
+
+<!-- 📊 REPORTES FIREBASE -->
+<script>
+function cargarReportes(){
+
+    db.ref("reportes").on("value", snapshot=>{
+
+        let data = snapshot.val();
+        let contenedor = document.getElementById("contenedor");
+
+        contenedor.innerHTML = "";
+
+        if(!data){
+            contenedor.innerHTML = "<p>No hay reportes aún</p>";
+            return;
+        }
+
+        for(let id in data){
+
+            let rep = data[id];
+
+            contenedor.innerHTML += `
+            <div class="card">
+                <p><b>Usuario:</b> ${rep.usuario}</p>
+                <p><b>Fecha:</b> ${rep.fecha}</p>
+
+                <button onclick='verDetalle(${JSON.stringify(rep)})'>
+                    Ver detalles
+                </button>
+            </div>
+            `;
+        }
+
+    });
+}
+
+function verDetalle(rep){
+
+    let evals = JSON.parse(rep.evaluaciones);
+    let asist = JSON.parse(rep.asistencia);
+
+    let texto = "Usuario: " + rep.usuario + "\n";
+    texto += "Fecha: " + rep.fecha + "\n\n";
+
+    texto += "EVALUACIONES:\n";
+
+    evals.forEach(fila=>{
+        texto += fila.join(" | ") + "\n";
+    });
+
+    texto += "\nASISTENCIA:\n";
+
+    asist.forEach(fila=>{
+        let filaTexto = fila.map(c => c.texto || "").join(" | ");
+        texto += filaTexto + "\n";
+    });
+
+    alert(texto);
+}
+
+// 🚀 INICIO
+cargarReportes();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación PJ</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+/* HEADER */
+header{
+    background:#111;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:bold;
+}
+
+nav{
+    display:flex;
+    gap:20px;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+}
+
+/* HAMBURGUESA */
+.menu-toggle{
+    display:none;
+    font-size:25px;
+    cursor:pointer;
+}
+
+/* BANNER */
+.banner{
+    height:200px;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url('imagenes/banner.jpeg') no-repeat center/cover;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:25px;
+    font-weight:bold;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+    nav{
+        position:absolute;
+        top:60px;
+        right:0;
+        background:#111;
+        flex-direction:column;
+        width:200px;
+        display:none;
+        padding:10px;
+    }
+
+    nav.active{
+        display:flex;
+    }
+
+    .menu-toggle{
+        display:block;
+    }
+}
+
+/* BODY */
+body{
+    background:#111;
+    padding:20px;
+}
+
+/* TABLA */
+.tabla-scroll{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse: collapse;
+    background:white;
+    min-width:900px;
+}
+
+th, td{
+    border:1px solid #333;
+    text-align:center;
+    padding:5px;
+    min-width:40px;
+}
+
+/* TOTAL */
+.total{
+    background:#ddd;
+    font-weight:bold;
+}
+
+/* COLORES */
+.aprobado{
+    background:#4caf50 !important;
+    color:white;
+}
+
+.reprobado{
+    background:#f44336 !important;
+    color:white;
+}
+</style>
+</head>
+
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="logo">Patrulla Juvenil</div>
+
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+    <nav id="menu">
+        <a href="PJ.html">Inicio</a>
+        <a href="Asistencias.html">Asistencia</a>
+        <a href="Evaluaciones.html">Evaluaciones</a>
+        <a href="Eventos.html">Eventos</a>
+    </nav>
+</header>
+
+<!-- BANNER -->
+<section class="banner">
+    Evaluaciones
+</section>
+
+<h2 style="color:white; margin-top:20px;">Evaluación de Grados</h2>
+
+<p style="color:white;">Media: <span id="media">0</span></p>
+
+<!-- TABLA -->
+<div class="tabla-scroll">
+<table id="tabla">
+<thead>
+<tr>
+    <th>Nombre</th>
+    <th>Contestaciones</th>
+    <th>Orden Cerrado</th>
+    <th>Defensa</th>
+    <th>Gimnasia</th>
+    <th>Equipamiento</th>
+    <th>Acondicionamiento</th>
+    <th>Teoría</th>
+    <th>Liderazgo</th>
+    <th>Asistencia</th>
+    <th>Disciplina</th>
+    <th>Compañerismo</th>
+    <th class="total">Puntuación</th>
+</tr>
+</thead>
+
+<tbody id="cuerpo"></tbody>
+</table>
+</div>
+
+<br>
+<button onclick="agregarFila()">Agregar fila</button>
+
+<script>
+// MENÚ
+function toggleMenu(){
+    document.getElementById("menu").classList.toggle("active");
+}
+
+const cuerpo = document.getElementById("cuerpo");
+
+// CREAR FILAS INICIALES
+for(let i=0;i<8;i++){
+    agregarFila();
+}
+
+// AGREGAR FILA
+function agregarFila(){
+    let fila = document.createElement("tr");
+
+    for(let i=0;i<13;i++){
+        let celda = document.createElement("td");
+
+        if(i === 12){
+            celda.classList.add("total");
+        }else{
+            celda.setAttribute("contenteditable","true");
+        }
+
+        fila.appendChild(celda);
+    }
+
+    cuerpo.appendChild(fila);
+}
+
+// EVENTO GENERAL
+document.getElementById("tabla").addEventListener("input", function(){
+    calcularTodo();
+    calcularMedia();
+    guardarDatos();
+});
+
+// SUMA POR FILA
+function calcularTodo(){
+    let filas = document.querySelectorAll("#tabla tbody tr");
+
+    filas.forEach(fila=>{
+        let celdas = fila.querySelectorAll("td");
+        let total = 0;
+
+        for(let i=1;i<=11;i++){
+            total += parseFloat(celdas[i].innerText) || 0;
+        }
+
+        celdas[12].innerText = total;
+    });
+}
+
+// MEDIA Y COLORES
+function calcularMedia(){
+    let filas = document.querySelectorAll("#tabla tbody tr");
+    let suma = 0;
+    let contador = 0;
+
+    filas.forEach(fila=>{
+        let texto = fila.querySelector(".total").innerText.trim();
+
+        if(texto !== ""){
+            let total = parseFloat(texto);
+            if(!isNaN(total)){
+                suma += total;
+                contador++;
+            }
+        }
+    });
+
+    let media = contador > 0 ? suma / contador : 0;
+
+    document.getElementById("media").innerText = media.toFixed(2);
+
+    filas.forEach(fila=>{
+        let celda = fila.querySelector(".total");
+        let total = parseFloat(celda.innerText) || 0;
+
+        celda.classList.remove("aprobado","reprobado");
+
+        if(total >= media){
+            celda.classList.add("aprobado");
+        } else {
+            celda.classList.add("reprobado");
+        }
+    });
+}
+
+// GUARDAR
+function guardarDatos(){
+    let datos = [];
+
+    document.querySelectorAll("#tabla tbody tr").forEach(fila=>{
+        let filaDatos = [];
+        fila.querySelectorAll("td").forEach(td=>{
+            filaDatos.push(td.innerText);
+        });
+        datos.push(filaDatos);
+    });
+
+    localStorage.setItem("tablaPJ", JSON.stringify(datos));
+}
+
+// CARGAR
+function cargarDatos(){
+    let datos = JSON.parse(localStorage.getItem("tablaPJ"));
+    if(!datos) return;
+
+    let filas = document.querySelectorAll("#tabla tbody tr");
+
+    filas.forEach((fila,i)=>{
+        let celdas = fila.querySelectorAll("td");
+        celdas.forEach((celda,j)=>{
+            celda.innerText = datos[i][j] || "";
+        });
+    });
+}
+
+// INICIO
+window.onload = function(){
+    cargarDatos();
+    calcularTodo();
+    calcularMedia();
+}
+</script>
+<button onclick="sincronizar()">sincronizar</button>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
+
+  authDomain: "patrullas-app.firebaseapp.com",
+
+  databaseURL: "https://patrullas-app-default-rtdb.firebaseio.com/",
+
+  projectId: "patrullas-app",
+
+  storageBucket: "patrullas-app.firebasestorage.app",
+
+  messagingSenderId: "321531166140",
+
+  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
+
+};
+
+// 🔥 CORRECCIÓN
+const App =
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+</script>
+
+<script>
+function sincronizar(){
+
+    let datos = {
+        usuario: localStorage.getItem("usuarioActual"),
+        fecha: new Date().toLocaleString(),
+        evaluaciones: localStorage.getItem("tablaPJ"),
+        asistencia: localStorage.getItem("asistenciaPJ")
+    };
+
+    let id = "rep_" + Date.now();
+
+    db.ref("reportes/" + id).set(datos)
+    .then(()=>{
+        alert("Datos enviados");
+    })
+    .catch(()=>{
+        alert("Error al enviar");
+    });
+}
+</script>
+
+</body>
+</html>

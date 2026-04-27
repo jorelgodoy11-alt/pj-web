@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patrulla Juvenil</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+header{
+    background:#111;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:bold;
+}
+
+nav{
+    display:flex;
+    gap:20px;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+}
+
+.menu-toggle{
+    display:none;
+    font-size:25px;
+    cursor:pointer;
+}
+
+.banner{
+    height:300px;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url('imagenes/banner.jpeg') no-repeat center/cover;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:30px;
+    font-weight:bold;
+}
+
+.galeria{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin:20px;
+}
+
+figure img{
+    width:200px;
+}
+
+@media(max-width:768px){
+    nav{
+        position:absolute;
+        top:60px;
+        right:0;
+        background:#111;
+        flex-direction:column;
+        width:200px;
+        display:none;
+        padding:10px;
+    }
+
+    nav.active{
+        display:flex;
+    }
+
+    .menu-toggle{
+        display:block;
+    }
+}
+
+body{
+    font-family: Arial;
+    background:#111;
+    padding:20px;
+}
+
+/* CONTENEDOR */
+.tabla-scroll{
+    overflow-x:auto;
+}
+
+.container{
+    background:white;
+    padding:20px;
+    min-width:1000px;
+}
+
+/* TEXTOS */
+.titulo{
+    text-align:center;
+    font-weight:bold;
+}
+
+.subtitulo{
+    text-align:center;
+}
+
+/* TABLA */
+table{
+    width:100%;
+    border-collapse: collapse;
+}
+
+td, th{
+    border:1px solid #333;
+    padding:5px;
+    text-align:center;
+}
+
+/* EDITABLE */
+.editable{
+    background:#f9f9f9;
+}
+
+/* ASISTENCIA */
+.asistencia{
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.presente{
+    background:#4caf50;
+    color:white;
+}
+
+.falta{
+    background:#f44336;
+    color:white;
+}
+</style>
+</head>
+
+<header>
+    <div class="logo">Patrulla Juvenil</div>
+
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+    <nav id="menu">
+        <a href="PJ.html">Inicio</a>
+        <a href="Asistencias.html">Asistencia</a>
+        <a href="Evaluaciones.html">Evaluaciones</a>
+        <a href="Eventos.html">Eventos</a>
+    </nav>
+
+    <button onclick="logout()">Salir</button>
+</header>
+
+<section class="banner">
+    Asistencias
+</section>
+
+<script>
+function toggleMenu(){
+    document.getElementById("menu").classList.toggle("active");
+}
+
+function logout(){
+    localStorage.removeItem("login");
+    window.location.href = "login.html";
+}
+</script>
+
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+<body>
+
+<div class="tabla-scroll">
+<div class="container">
+
+<h2 class="titulo">PATRULLA JUVENIL A.C.</h2>
+<p class="subtitulo">BAJA CALIFORNIA</p>
+<h3 class="titulo">LISTA DE ASISTENCIA</h3>
+
+<br>
+
+<!-- DATOS -->
+<table>
+<tr>
+<td>ENTRENAMIENTO</td>
+<td contenteditable="true" class="editable"></td>
+<td>INSTRUCTOR</td>
+<td contenteditable="true" class="editable"></td>
+</tr>
+<tr>
+<td>CURSO</td>
+<td contenteditable="true" class="editable"></td>
+<td>COMANDANTE</td>
+<td contenteditable="true" class="editable"></td>
+</tr>
+</table>
+
+<br>
+
+<!-- TABLA -->
+<table id="tabla">
+<thead>
+<tr>
+<th>No.</th>
+<th>Matrícula</th>
+<th>Nombre</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+</tr>
+</thead>
+
+<tbody id="cuerpo"></tbody>
+</table>
+
+</div>
+</div>
+
+<script>
+const cuerpo = document.getElementById("cuerpo");
+
+// CREAR FILAS
+for(let i=1;i<=20;i++){
+    let fila = document.createElement("tr");
+
+    fila.innerHTML = `
+    <td>${i}</td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    ${crearCeldas()}
+    `;
+
+    cuerpo.appendChild(fila);
+}
+
+// CREAR CELDAS DE ASISTENCIA
+function crearCeldas(){
+    let celdas = "";
+    for(let i=0;i<8;i++){
+        celdas += `<td class="asistencia" onclick="toggleAsistencia(this)"></td>`;
+    }
+    return celdas;
+}
+
+// TOGGLE ASISTENCIA
+function toggleAsistencia(celda){
+
+    if(celda.classList.contains("presente")){
+        celda.classList.remove("presente");
+        celda.classList.add("falta");
+        celda.innerText = "F";
+    }
+    else if(celda.classList.contains("falta")){
+        celda.classList.remove("falta");
+        celda.innerText = "";
+    }
+    else{
+        celda.classList.add("presente");
+        celda.innerText = "✔";
+    }
+
+    guardarDatos();
+}
+
+// GUARDAR
+function guardarDatos(){
+    let datos = [];
+
+    document.querySelectorAll("#tabla tbody tr").forEach(fila=>{
+        let filaDatos = [];
+
+        fila.querySelectorAll("td").forEach(td=>{
+            filaDatos.push({
+                texto: td.innerText,
+                clase: td.className
+            });
+        });
+
+        datos.push(filaDatos);
+    });
+
+    localStorage.setItem("asistenciaPJ", JSON.stringify(datos));
+}
+
+// CARGAR
+function cargarDatos(){
+    let datos = JSON.parse(localStorage.getItem("asistenciaPJ"));
+    if(!datos) return;
+
+    let filas = document.querySelectorAll("#tabla tbody tr");
+
+    filas.forEach((fila,i)=>{
+        let celdas = fila.querySelectorAll("td");
+
+        celdas.forEach((celda,j)=>{
+            celda.innerText = datos[i][j].texto;
+            celda.className = datos[i][j].clase;
+        });
+    });
+}
+
+// GUARDAR AL ESCRIBIR
+document.getElementById("tabla").addEventListener("input", guardarDatos);
+
+// INICIO
+window.onload = function(){
+    cargarDatos();
+}
+</script>
+
+</body>
+</html>
