@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Admin</title>
+<title>Cambiar contraseña</title>
 <link rel="manifest" href="manifest.json">
 
 <style>
@@ -10,61 +10,50 @@ body{
     font-family: Arial;
     background:#111;
     color:white;
-    padding:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
-h1,h2{
+.login-box{
+    background:#222;
+    padding:30px;
+    border-radius:10px;
     text-align:center;
+    width:250px;
 }
 
 input{
-    padding:8px;
-    margin:5px;
+    width:100%;
+    padding:10px;
+    margin:10px 0;
     border:none;
     border-radius:5px;
 }
 
 button{
-    padding:8px 12px;
+    width:100%;
+    padding:10px;
     background:#4caf50;
     border:none;
     color:white;
+    font-size:16px;
     cursor:pointer;
-    margin:5px;
     border-radius:5px;
-}
-
-.card{
-    background:#222;
-    margin:15px 0;
-    padding:15px;
-    border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Panel Admin PJ</h1>
+<div class="login-box">
+    <h2>Cambiar contraseña</h2>
 
-<!-- 🔐 AGREGAR USUARIO -->
-<h2>Agregar Matrícula</h2>
-<input type="text" id="matricula" placeholder="Matrícula">
-<input type="text" id="password" placeholder="Contraseña temporal">
-<button onclick="agregar()">Agregar</button>
+    <input type="password" id="nueva" placeholder="Nueva contraseña">
+    <button onclick="guardar()">Guardar</button>
+</div>
 
-<!-- ❌ ELIMINAR USUARIO -->
-<h2>Eliminar Matrícula</h2>
-<input type="text" id="eliminar" placeholder="Matrícula a eliminar">
-<button onclick="eliminarUsuario()">Eliminar</button>
-
-<hr>
-
-<!-- 📊 REPORTES -->
-<h2>Reportes Recibidos</h2>
-<div id="contenedor"></div>
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -84,120 +73,29 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// Comprobar si es admin (requiere login)
-auth.onAuthStateChanged(user => {
-    if(user){
-        db.ref("usuarios/" + user.uid).once("value").then(snapshot => {
-            const data = snapshot.val();
-            if(!data || data.rol !== "admin"){
-                alert("No tienes permiso de admin");
-                auth.signOut();
-                window.location.href = "index.html";
-            }
-        });
-    } else {
-        // No logueado
-        window.location.href = "index.html";
-    }
-});
+// Obtener UID desde query string
+const urlParams = new URLSearchParams(window.location.search);
+const uid = urlParams.get('uid');
 
-// 🔐 AGREGAR USUARIO
-function agregar(){
-    const mat = document.getElementById("matricula").value.trim();
-    const pass = document.getElementById("password").value;
-
-    if(!mat || !pass){
-        alert("Llena todos los campos");
+function guardar(){
+    const nueva = document.getElementById("nueva").value;
+    if(!nueva){
+        alert("Escribe una contraseña");
         return;
     }
 
-    const email = mat + "@pj.com"; // correo ficticio
-
-    // Crear usuario en Firebase Auth
-    auth.createUserWithEmailAndPassword(email, pass)
-    .then(userCredential => {
-        const uid = userCredential.user.uid;
-        // Guardar datos en Realtime Database
-        db.ref("usuarios/" + uid).set({
-            matricula: mat,
-            rol: "usuario",
-            primeraVez: true
-        }).then(() => {
-            alert("Usuario creado correctamente");
+    // Cambiar contraseña en Firebase Auth
+    auth.currentUser.updatePassword(nueva).then(()=>{
+        // Marcar primeraVez como false
+        db.ref("usuarios/" + uid).update({ primeraVez: false }).then(()=>{
+            alert("Contraseña cambiada");
+            window.location.href = "PJ.html";
         });
-    })
-    .catch(error => {
-        alert("Error al crear usuario: " + error.message);
+    }).catch(err=>{
+        console.error(err);
+        alert("Error al cambiar contraseña");
     });
 }
-
-// ❌ ELIMINAR USUARIO
-function eliminarUsuario(){
-    const mat = document.getElementById("eliminar").value.trim();
-    if(!mat){
-        alert("Escribe la matrícula a eliminar");
-        return;
-    }
-
-    // Buscar usuario por matrícula
-    db.ref("usuarios").orderByChild("matricula").equalTo(mat).once("value")
-    .then(snapshot => {
-        if(snapshot.exists()){
-            snapshot.forEach(snap => {
-                const uid = snap.key;
-                // Eliminar de Database
-                db.ref("usuarios/" + uid).remove();
-                // Eliminar de Auth
-                auth.deleteUser(uid) // Requiere Admin SDK en servidor si quieres borrar de Auth
-                .catch(()=>{}); // opcional
-            });
-            alert("Usuario eliminado");
-        } else {
-            alert("Usuario no encontrado");
-        }
-    });
-}
-
-// 📊 REPORTES
-function cargarReportes(){
-    db.ref("reportes").on("value", snapshot => {
-        const data = snapshot.val();
-        const contenedor = document.getElementById("contenedor");
-        contenedor.innerHTML = "";
-
-        if(!data){
-            contenedor.innerHTML = "<p>No hay reportes aún</p>";
-            return;
-        }
-
-        for(let id in data){
-            const rep = data[id];
-            contenedor.innerHTML += `
-            <div class="card">
-                <p><b>Usuario:</b> ${rep.usuario}</p>
-                <p><b>Fecha:</b> ${rep.fecha}</p>
-                <button onclick='verDetalle(${JSON.stringify(rep)})'>Ver detalles</button>
-            </div>
-            `;
-        }
-    });
-}
-
-function verDetalle(rep){
-    const evals = JSON.parse(rep.evaluaciones || "[]");
-    const asist = JSON.parse(rep.asistencia || "[]");
-    let texto = `Usuario: ${rep.usuario}\nFecha: ${rep.fecha}\n\nEVALUACIONES:\n`;
-    evals.forEach(fila => texto += fila.join(" | ") + "\n");
-    texto += "\nASISTENCIA:\n";
-    asist.forEach(fila => {
-        let filaTexto = fila.map(c => c.texto || "").join(" | ");
-        texto += filaTexto + "\n";
-    });
-    alert(texto);
-}
-
-// 🚀 Iniciar
-cargarReportes();
 </script>
 
 </body>
