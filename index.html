@@ -101,6 +101,25 @@ function login() {
 }
 </script>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
+  authDomain: "patrullas-app.firebaseapp.com",
+  databaseURL: "https://patrullas-app-default-rtdb.firebaseio.com/",
+  projectId: "patrullas-app",
+  storageBucket: "patrullas-app.firebasestorage.app",
+  messagingSenderId: "321531166140",
+  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
+
+
 <alt>
 
 </body>
