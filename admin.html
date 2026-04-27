@@ -110,31 +110,28 @@ function agregar(){
         return;
     }
 
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-
-    usuarios[mat] = pass;
-
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-    alert("Matrícula agregada");
+    db.ref("usuarios/" + mat).set({
+        password: pass
+    })
+    .then(()=>{
+        alert("Matricula agregada en firebase"
+    })
+    .catch(()=>{
+        alert("Error");
+    });
+    
 }
 
 function eliminarUsuario(){
     let mat = document.getElementById("eliminar").value;
 
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-
-    if(usuarios[mat]){
-        delete usuarios[mat];
-
-        localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-        localStorage.removeItem(mat);
-
-        alert("Usuario eliminado");
-    } else {
-        alert("No existe esa matrícula");
-    }
+    db.ref("usuarios/" + mat).remove()
+    .then(()=>{
+        alert("Matricula agregada en firebase"
+    })
+    .catch(()=>{
+        alert("No existe esta matricula");
+    });
 }
 </script>
 
