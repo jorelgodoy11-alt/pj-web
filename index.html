@@ -57,13 +57,6 @@ button{
     <button onclick="login()">Entrar</button>
 </div>
 
-<script>
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
-</script>
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -80,56 +73,48 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 const auth = firebase.auth();
-</script>
+const db = firebase.database();
 
-<script>
 function login() {
-    const matricula = document.getElementById("user").value.trim();
-    const password = document.getElementById("pass").value;
+    const userInput = document.getElementById("user").value.trim();
+    const passInput = document.getElementById("pass").value;
 
-    if(!matricula || !password){
-        alert("Ingresa matrícula y contraseña");
+    if(!userInput || !passInput){
+        alert("Llena todos los campos");
         return;
     }
 
-    // Admin local (opcional) si quieres mantener admin "hardcodeado"
-    if(matricula === "admin" && password === "admin123"){
-        window.location.href = "admin.html";
-        return;
+    let email;
+    if(userInput === "admin"){
+        email = "admin@pj.com";
+    } else {
+        email = userInput + "@pj.com"; // usuarios normales
     }
 
-    // Email ficticio usando matrícula
-    const email = matricula + "@pj.com";
-
-    auth.signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
+    auth.signInWithEmailAndPassword(email, passInput)
+    .then(userCredential => {
         const uid = userCredential.user.uid;
-
-        // Leer datos de usuario desde Realtime Database
-        db.ref("usuarios/" + uid).once("value")
-        .then(snapshot => {
+        db.ref("usuarios/" + uid).once("value").then(snapshot => {
             const data = snapshot.val();
-
             if(!data){
-                alert("Usuario no encontrado en la base de datos");
+                alert("Usuario no existe en Database");
                 auth.signOut();
                 return;
             }
 
-            // Verificamos si es primera vez
             if(data.primeraVez){
-                // Redirigir a página para cambiar contraseña
-                window.location.href = "cambiar.html?uid=" + uid;
+                window.location.href = `cambiar.html?uid=${uid}`;
+            } else if(data.rol === "admin") {
+                window.location.href = "admin.html";
             } else {
-                // Redirigir a la página principal del usuario
                 window.location.href = "PJ.html";
             }
         });
     })
-    .catch((error) => {
-        alert(error.message);
+    .catch(err => {
+        alert("Usuario o contraseña incorrecta");
+        console.error(err);
     });
 }
 </script>
