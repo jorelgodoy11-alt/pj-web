@@ -78,26 +78,23 @@ function login() {
 
     return;
     }
-
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-    let savedPass = localStorage.getItem(user);
-
-    if(savedPass){
-        if(savedPass === pass){
+//BUSCAR EN FIREBASE
+    db.red("usuarios/" + user).once("value", snapshot => {
+    
+    if(snapshot.exist()){
+        let data = snapshot.val();
+        
+        if(data.password === pass){
             localStorage.setItem("login", "true");
             localStorage.setItem("usuarioActual", user);
             window.location.href = "PJ.html";
         } else {
             alert("Contraseña incorrecta");
         }
+    } else {
+        alert("Usuario no existe");
     }
-    else if(usuarios[user] === pass){
-        localStorage.setItem("usuarioActual", user);
-        window.location.href = "cambiar.html";
-    }
-    else{
-        alert("Datos incorrectos");
-    }
+    });
 }
 </script>
 
