@@ -73,39 +73,28 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// Obtener UID desde la URL
-const params = new URLSearchParams(window.location.search);
-const uid = params.get('uid');
+// Obtener UID desde query string
+const urlParams = new URLSearchParams(window.location.search);
+const uid = urlParams.get('uid');
 
 function guardar(){
-    const nueva = document.getElementById("nueva").value.trim();
-
+    const nueva = document.getElementById("nueva").value;
     if(!nueva){
         alert("Escribe una contraseña");
         return;
     }
 
-    // Re-autenticar el usuario con la contraseña temporal
-    const email = uid + "@pj.com"; // email ficticio
-    const tempPass = prompt("Ingresa la contraseña temporal para confirmar"); 
-
-    const credential = firebase.auth.EmailAuthProvider.credential(email, tempPass);
-
-    auth.signInWithEmailAndPassword(email, tempPass)
-    .then(() => {
-        // Cambiar contraseña
-        auth.currentUser.updatePassword(nueva)
-        .then(() => {
-            // Actualizar primeraVez en DB
-            db.ref("usuarios/" + uid).update({primeraVez: false})
-            .then(() => {
-                alert("Contraseña cambiada correctamente");
-                window.location.href = "PJ.html";
-            });
-        })
-        .catch(err => alert("Error al cambiar la contraseña: " + err.message));
-    })
-    .catch(err => alert("Error de autenticación: " + err.message));
+    // Cambiar contraseña en Firebase Auth
+    auth.currentUser.updatePassword(nueva).then(()=>{
+        // Marcar primeraVez como false
+        db.ref("usuarios/" + uid).update({ primeraVez: false }).then(()=>{
+            alert("Contraseña cambiada");
+            window.location.href = "PJ.html";
+        });
+    }).catch(err=>{
+        console.error(err);
+        alert("Error al cambiar contraseña");
+    });
 }
 </script>
 
