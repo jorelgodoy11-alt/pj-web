@@ -137,6 +137,12 @@ if(snap.exists()){
 
 const datos = snap.data();
 
+//ADMIN
+localStorage.setItem(
+"admin",
+datos.admin ? "true" : "false"
+);
+
 
 // GUARDAR USUARIO ACTUAL
 localStorage.setItem(
