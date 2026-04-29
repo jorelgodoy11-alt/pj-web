@@ -177,7 +177,7 @@ function toggleMenu(){
 
 function logout(){
     localStorage.removeItem("login");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
 }
 </script>
 
@@ -330,6 +330,96 @@ document.getElementById("tabla").addEventListener("input", guardarDatos);
 window.onload = function(){
     cargarDatos();
 }
+</script>
+
+<br>
+<button onclick="sincronizarAsistencia()">Sincronizar</button>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+// CONFIG FIREBASE
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
+
+  authDomain: "patrullas-app.firebaseapp.com",
+
+  projectId: "patrullas-app",
+
+  storageBucket: "patrullas-app.firebasestorage.app",
+
+  messagingSenderId: "321531166140",
+
+  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
+
+};
+
+
+// INICIALIZAR FIREBASE
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+// SINCRONIZAR ASISTENCIAS
+window.sincronizarAsistencia = async function(){
+
+    try{
+
+        // USUARIO ACTUAL
+        const usuario =
+        localStorage.getItem("usuarioActual");
+
+
+        // DATOS DE ASISTENCIA
+        const asistencia =
+        JSON.parse(
+        localStorage.getItem("asistenciaPJ")
+        ) || [];
+
+
+        // ENVIAR A FIRESTORE
+        await addDoc(
+            collection(db, "reportes"),
+            {
+
+                matricula: usuario,
+
+                tipo: "asistencia",
+
+                fecha:
+                new Date().toLocaleString(),
+
+                asistencia: asistencia
+
+            }
+        );
+
+
+        alert("Asistencias sincronizadas correctamente");
+
+
+    }catch(error){
+
+        alert("Error al sincronizar");
+
+        console.log(error);
+
+    }
+
+}
+
 </script>
 
 </body>
