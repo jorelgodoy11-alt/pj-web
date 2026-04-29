@@ -147,6 +147,11 @@ Panel Admin
 
 <script>
 
+function logout(){ localStorage.removeItem("login"); 
+                  localStorage.removeItem("admin"); // 🔥 importante
+                  window.location.href = "index.html"
+                  }
+
 function toggleMenu(){
     document.getElementById("menu").classList.toggle("active");
 }
