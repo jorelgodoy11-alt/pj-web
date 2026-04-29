@@ -1,101 +1,68 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Cambiar contraseña</title>
-<link rel="manifest" href="manifest.json">
 
-<style>
-body{
-    font-family: Arial;
-    background:#111;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+const password =
+document.getElementById("password").value;
+
+
+if(
+matricula === "" ||
+nombre === "" ||
+password === ""
+){
+
+alert("Completa todos los campos");
+
+return;
+
 }
 
-.login-box{
-    background:#222;
-    padding:30px;
-    border-radius:10px;
-    text-align:center;
-    width:250px;
+
+const correo =
+matricula + "@ecoapp.com";
+
+
+try{
+
+// CREAR EN AUTHENTICATION
+await createUserWithEmailAndPassword(
+auth,
+correo,
+password
+);
+
+
+// CREAR EN FIRESTORE
+await setDoc(
+doc(db, "usuarios", matricula),
+{
+
+matricula: matricula,
+nombre: nombre,
+primerIngreso: true,
+rol: "usuario"
+
+}
+);
+
+
+alert("Usuario creado correctamente");
+
+
+document.getElementById("matricula").value = "";
+document.getElementById("nombre").value = "";
+document.getElementById("password").value = "";
+
+
+}catch(error){
+
+alert(error.message);
+
+console.log(error);
+
 }
 
-input{
-    width:100%;
-    padding:10px;
-    margin:10px 0;
-    border:none;
-    border-radius:5px;
 }
 
-button{
-    width:100%;
-    padding:10px;
-    background:#4caf50;
-    border:none;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-    border-radius:5px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="login-box">
-    <h2>Cambiar contraseña</h2>
-
-    <input type="password" id="nueva" placeholder="Nueva contraseña">
-    <button onclick="guardar()">Guardar</button>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
-  authDomain: "patrullas-app.firebaseapp.com",
-  databaseURL: "https://patrullas-app-default-rtdb.firebaseio.com/",
-  projectId: "patrullas-app",
-  storageBucket: "patrullas-app.firebasestorage.app",
-  messagingSenderId: "321531166140",
-  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-// Obtener UID desde query string
-const urlParams = new URLSearchParams(window.location.search);
-const uid = urlParams.get('uid');
-
-function guardar(){
-    const nueva = document.getElementById("nueva").value;
-    if(!nueva){
-        alert("Escribe una contraseña");
-        return;
-    }
-
-    // Cambiar contraseña en Firebase Auth
-    auth.currentUser.updatePassword(nueva).then(()=>{
-        // Marcar primeraVez como false
-        db.ref("usuarios/" + uid).update({ primeraVez: false }).then(()=>{
-            alert("Contraseña cambiada");
-            window.location.href = "PJ.html";
-        });
-    }).catch(err=>{
-        console.error(err);
-        alert("Error al cambiar contraseña");
-    });
-}
 </script>
 
 </body>
