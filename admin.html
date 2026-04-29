@@ -46,6 +46,18 @@ th{
 </style>
 </head>
 
+    <script>
+
+if(localStorage.getItem("admin") !== "true"){
+
+    alert("No autorizado");
+
+    window.location.href = "index.html";
+
+}
+
+</script>
+
 <body>
 
 <h1>Panel de Admin PJ</h1>
