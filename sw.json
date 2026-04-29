@@ -3,7 +3,7 @@ self.addEventListener("install", e => {
     caches.open("pj-cache").then(cache => {
       return cache.addAll([
         "/",
-        "/login.html",
+        "/index.html",
         "/PJ.html",
         "/Evaluaciones.html",
         "/Asistencias.html",
