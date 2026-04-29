@@ -46,6 +46,12 @@ button{
 </style>
 </head>
 
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+
 <body>
 
 <div class="login-box">
@@ -57,11 +63,25 @@ button{
     <button onclick="login()">Entrar</button>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script type="module">
 
-<script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getAuth,
+signInWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+getDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+// CONFIG FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
   authDomain: "patrullas-app.firebaseapp.com",
@@ -72,52 +92,90 @@ const firebaseConfig = {
   appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
 
-function login() {
-    const userInput = document.getElementById("user").value.trim();
-    const passInput = document.getElementById("pass").value;
+// INICIALIZAR FIREBASE
+const app = initializeApp(firebaseConfig);
 
-    if(!userInput || !passInput){
-        alert("Llena todos los campos");
-        return;
-    }
+const auth = getAuth(app);
 
-    let email;
-    if(userInput === "admin"){
-        email = "admin@pj.com";
-    } else {
-        email = userInput + "@pj.com"; // usuarios normales
-    }
+const db = getFirestore(app);
 
-    auth.signInWithEmailAndPassword(email, passInput)
-    .then(userCredential => {
-        const uid = userCredential.user.uid;
-        db.ref("usuarios/" + uid).once("value").then(snapshot => {
-            const data = snapshot.val();
-            if(!data){
-                alert("Usuario no existe en Database");
-                auth.signOut();
-                return;
-            }
 
-            if(data.primeraVez){
-                window.location.href = `cambiar.html?uid=${uid}`;
-            } else if(data.rol === "admin") {
-                window.location.href = "admin.html";
-            } else {
-                window.location.href = "PJ.html";
-            }
-        });
-    })
-    .catch(err => {
-        alert("Usuario o contraseña incorrecta");
-        console.error(err);
-    });
+// LOGIN
+window.login = async function(){
+
+const user =
+document.getElementById("user").value;
+
+const pass =
+document.getElementById("pass").value;
+
+
+// MATRÍCULA → EMAIL
+const correo =
+user + "@ecoapp.com";
+
+try{
+
+// LOGIN FIREBASE
+await signInWithEmailAndPassword(
+auth,
+correo,
+pass
+);
+
+
+// BUSCAR DATOS EN FIRESTORE
+const ref =
+doc(db, "usuarios", user);
+
+const snap =
+await getDoc(ref);
+
+
+if(snap.exists()){
+
+const datos = snap.data();
+
+
+// GUARDAR USUARIO ACTUAL
+localStorage.setItem(
+"usuarioActual",
+user
+);
+
+
+// VALIDAR PRIMER INGRESO
+if(datos.primerIngreso === true){
+
+window.location.href =
+"cambiar.html";
+
+}else{
+
+window.location.href =
+"PJ.html";
+
 }
+
+}else{
+
+alert("Usuario no encontrado");
+
+}
+
+}catch(error){
+
+alert("Datos incorrectos");
+
+console.log(error);
+
+}
+
+}
+
 </script>
+
 
 </body>
 </html>
