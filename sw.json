@@ -1,18 +1,41 @@
 self.addEventListener("install", e => {
+
   e.waitUntil(
-    caches.open("pj-cache").then(cache => {
+
+    caches.open("pj-cache-v2").then(cache => {
+
       return cache.addAll([
+
         "/",
         "/index.html",
-        "/PJ.html",
-        "/Evaluaciones.html",
-        "/Asistencias.html",
-        "/admin.html"
+        "/pj.html",
+        "/evaluaciones.html",
+        "/asistencias.html",
+        "/admin.html",
+        "/cambiar.html"
+
       ]);
+
     })
+
   );
+
 });
 
+
+self.addEventListener("fetch", e => {
+
+  e.respondWith(
+
+    caches.match(e.request).then(res => {
+
+      return res || fetch(e.request);
+
+    })
+
+  );
+
+});
 self.addEventListener("fetch", e => {
   e.respondWith(
     caches.match(e.request).then(res => {
