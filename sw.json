@@ -8,7 +8,7 @@ self.addEventListener("install", e => {
 
         "/",
         "/index.html",
-        "/pj.html",
+        "/PJ.html",
         "/evaluaciones.html",
         "/asistencias.html",
         "/admin.html",
