@@ -1,67 +1,141 @@
 <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin PJ</title>
 
-const password =
-document.getElementById("password").value;
+<style>
+body{
+    font-family: Arial;
+    background:#111;
+    color:white;
+    padding:20px;
+}
 
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
 
-if(
-matricula === "" ||
-nombre === "" ||
-password === ""
-){
+input{
+    padding:10px;
+    width:100%;
+    margin-bottom:15px;
+    border-radius:5px;
+    border:none;
+}
 
-alert("Completa todos los campos");
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    color:black;
+}
 
-return;
+th,td{
+    border:1px solid #333;
+    padding:8px;
+    text-align:center;
+}
+
+th{
+    background:#222;
+    color:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Panel de Admin PJ</h1>
+
+<input type="text" id="buscar" placeholder="Buscar matrícula..." oninput="filtrar()">
+
+<table>
+<thead>
+<tr>
+    <th>Matrícula</th>
+    <th>Tipo</th>
+    <th>Fecha</th>
+    <th>Datos</th>
+</tr>
+</thead>
+
+<tbody id="tabla"></tbody>
+</table>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
+  authDomain: "patrullas-app.firebaseapp.com",
+  projectId: "patrullas-app",
+  storageBucket: "patrullas-app.firebasestorage.app",
+  messagingSenderId: "321531166140",
+  appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let datosGlobales = [];
+
+async function cargar(){
+
+    const snap = await getDocs(collection(db,"reportes"));
+
+    datosGlobales = [];
+
+    snap.forEach(doc=>{
+        datosGlobales.push(doc.data());
+    });
+
+    mostrar(datosGlobales);
+}
+
+function mostrar(data){
+
+    let tabla = document.getElementById("tabla");
+    tabla.innerHTML = "";
+
+    data.forEach(d=>{
+
+        let fila = `
+        <tr>
+            <td>${d.matricula || ""}</td>
+            <td>${d.tipo || ""}</td>
+            <td>${d.fecha || ""}</td>
+            <td><pre style="text-align:left">${JSON.stringify(d.evaluaciones || d.asistencia || {}, null, 2)}</pre></td>
+        </tr>
+        `;
+
+        tabla.innerHTML += fila;
+
+    });
 
 }
 
+window.filtrar = function(){
 
-const correo =
-matricula + "@ecoapp.com";
+    let texto = document.getElementById("buscar").value.toLowerCase();
 
+    let filtrados = datosGlobales.filter(d =>
+        (d.matricula || "").toLowerCase().includes(texto)
+    );
 
-try{
-
-// CREAR EN AUTHENTICATION
-await createUserWithEmailAndPassword(
-auth,
-correo,
-password
-);
-
-
-// CREAR EN FIRESTORE
-await setDoc(
-doc(db, "usuarios", matricula),
-{
-
-matricula: matricula,
-nombre: nombre,
-primerIngreso: true,
-rol: "usuario"
-
-}
-);
-
-
-alert("Usuario creado correctamente");
-
-
-document.getElementById("matricula").value = "";
-document.getElementById("nombre").value = "";
-document.getElementById("password").value = "";
-
-
-}catch(error){
-
-alert(error.message);
-
-console.log(error);
-
+    mostrar(filtrados);
 }
 
-}
+cargar();
 
 </script>
 
