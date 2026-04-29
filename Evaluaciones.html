@@ -316,86 +316,48 @@ window.onload = function(){
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getFirestore,
 collection,
 addDoc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-
-// CONFIG FIREBASE
 const firebaseConfig = {
-
   apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
-
   authDomain: "patrullas-app.firebaseapp.com",
-
   projectId: "patrullas-app",
-
   storageBucket: "patrullas-app.firebasestorage.app",
-
   messagingSenderId: "321531166140",
-
   appId: "1:321531166140:web:200295ca96c51fa53f7fb9"
-
 };
 
-
-// INICIALIZAR FIREBASE
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
 
-
-// SINCRONIZAR EVALUACIONES
 window.sincronizar = async function(){
 
-    try{
+try{
 
-        // USUARIO ACTUAL
-        const usuario =
-        localStorage.getItem("usuarioActual");
+const usuario = localStorage.getItem("usuarioActual");
 
+const evaluaciones =
+JSON.parse(localStorage.getItem("tablaPJ")) || [];
 
-        // DATOS DE LA TABLA
-        const evaluaciones =
-        JSON.parse(
-        localStorage.getItem("tablaPJ")
-        ) || [];
+await addDoc(collection(db,"reportes"),{
+matricula: usuario,
+tipo: "evaluacion",
+fecha: new Date().toLocaleString(),
+evaluaciones: evaluaciones
+});
 
+alert("Evaluaciones sincronizadas");
 
-        // ENVIAR A FIRESTORE
-        await addDoc(
-            collection(db, "reportes"),
-            {
-
-                matricula: usuario,
-
-                tipo: "evaluacion",
-
-                fecha:
-                new Date().toLocaleString(),
-
-                evaluaciones: evaluaciones
-
-            }
-        );
-
-
-        alert("Evaluaciones sincronizadas correctamente");
-
-
-    }catch(error){
-
-        alert("Error al sincronizar");
-
-        console.log(error);
-
-    }
+}catch(e){
+console.log(e);
+alert("Error al sincronizar");
+}
 
 }
 
