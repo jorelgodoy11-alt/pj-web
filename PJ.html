@@ -118,6 +118,13 @@ if("serviceWorker" in navigator){
     </nav>
 
     <button onclick="logout()">Salir</button>
+    
+    <button id="adminBtn"
+onclick="irAdmin()"
+style="display:none;">
+Panel Admin
+</button>
+    
 </header>
 
 <section class="banner">
@@ -146,7 +153,22 @@ function toggleMenu(){
  function logout(){
     localStorage.removeItem("login");
     localStorage.removeItem("admin"); // 🔥 importante
-    window.location.href = "index.html";
+    window.location.href = "index.html"
+    
+     function irAdmin(){
+    window.location.href = "admin.html";
+}
+
+ }
+
+window.onload = function(){
+
+    if(localStorage.getItem("admin") === "true"){
+
+        document.getElementById("adminBtn").style.display = "block";
+
+    }
+
 }
 </script>
 
