@@ -312,21 +312,27 @@ window.onload = function(){
     calcularMedia();
 }
 </script>
-<button onclick="sincronizar()">sincronizar</button>
+<button onclick="sincronizar()">Sincronizar</button>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script type="module">
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-<script>
+import {
+getFirestore,
+collection,
+addDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+
+// CONFIG FIREBASE
 const firebaseConfig = {
 
   apiKey: "AIzaSyCtDOHcZSNnfSubKMX8X8bHUNA_QIeKya4",
 
   authDomain: "patrullas-app.firebaseapp.com",
-
-  databaseURL: "https://patrullas-app-default-rtdb.firebaseio.com/",
 
   projectId: "patrullas-app",
 
@@ -338,34 +344,61 @@ const firebaseConfig = {
 
 };
 
-// 🔥 CORRECCIÓN
-const App =
-firebase.initializeApp(firebaseConfig);
 
-const db = firebase.database();
+// INICIALIZAR FIREBASE
+const app = initializeApp(firebaseConfig);
 
-</script>
+const db = getFirestore(app);
 
-<script>
-function sincronizar(){
 
-    let datos = {
-        usuario: localStorage.getItem("usuarioActual"),
-        fecha: new Date().toLocaleString(),
-        evaluaciones: localStorage.getItem("tablaPJ"),
-        asistencia: localStorage.getItem("asistenciaPJ")
-    };
+// SINCRONIZAR EVALUACIONES
+window.sincronizar = async function(){
 
-    let id = "rep_" + Date.now();
+    try{
 
-    db.ref("reportes/" + id).set(datos)
-    .then(()=>{
-        alert("Datos enviados");
-    })
-    .catch(()=>{
-        alert("Error al enviar");
-    });
+        // USUARIO ACTUAL
+        const usuario =
+        localStorage.getItem("usuarioActual");
+
+
+        // DATOS DE LA TABLA
+        const evaluaciones =
+        JSON.parse(
+        localStorage.getItem("tablaPJ")
+        ) || [];
+
+
+        // ENVIAR A FIRESTORE
+        await addDoc(
+            collection(db, "reportes"),
+            {
+
+                matricula: usuario,
+
+                tipo: "evaluacion",
+
+                fecha:
+                new Date().toLocaleString(),
+
+                evaluaciones: evaluaciones
+
+            }
+        );
+
+
+        alert("Evaluaciones sincronizadas correctamente");
+
+
+    }catch(error){
+
+        alert("Error al sincronizar");
+
+        console.log(error);
+
+    }
+
 }
+
 </script>
 
 </body>
