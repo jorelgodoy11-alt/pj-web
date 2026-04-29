@@ -1,7 +1,7 @@
 {
   "name": "Patrulla Juvenil",
   "short_name": "PJ App",
-  "start_url": "login.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#111111",
